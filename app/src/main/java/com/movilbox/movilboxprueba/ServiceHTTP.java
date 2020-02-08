@@ -1,4 +1,4 @@
-package com.movilbox;
+package com.movilbox.movilboxprueba;
 
 import com.movilbox.movilboxprueba.models.Post;
 
