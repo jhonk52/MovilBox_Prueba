@@ -10,20 +10,27 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"/>
 
-    <TextView
-        android:id="@+id/txt_title_detalle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/toolbarpack"
-        android:textSize="24sp"
-        />
 
-    <TextView
-        android:id="@+id/txt_body_detalle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/txt_title_detalle"
-        android:textSize="20sp"/>
+            <TextView
+                android:id="@+id/txt_title_detalle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:layout_below="@+id/toolbarpack"/>
+
+            <TextView
+                android:id="@+id/txt_body_detalle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:layout_below="@+id/txt_title_detalle"/>
+
+            <ListView
+                android:id="@+id/lst_commentsList_detalle"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:isScrollContainer="false"
+                android:layout_below="@+id/txt_body_detalle"/>
 
 
 </RelativeLayout>

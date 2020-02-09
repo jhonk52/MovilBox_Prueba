@@ -1,11 +1,16 @@
 package com.movilbox.movilboxprueba.models;
 
+import com.google.gson.annotations.Expose;
+
 public class Post {
 
     private String id;
     private String title;
     private String body;
     private String userId;
+
+    private Boolean favorite = false;
+    private Boolean isViewed = false;
 
     public Post(String userId, String id, String title, String body ) {
         this.id = id;
@@ -15,6 +20,22 @@ public class Post {
     }
 
     public Post() {
+    }
+
+    public Boolean getFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(Boolean favorite) {
+        this.favorite = favorite;
+    }
+
+    public Boolean getViewed() {
+        return isViewed;
+    }
+
+    public void setViewed(Boolean viewed) {
+        isViewed = viewed;
     }
 
     public String getId() {

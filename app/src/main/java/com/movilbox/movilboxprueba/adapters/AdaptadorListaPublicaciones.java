@@ -3,6 +3,7 @@ package com.movilbox.movilboxprueba.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -41,7 +42,7 @@ public class AdaptadorListaPublicaciones extends RecyclerView.Adapter<AdaptadorL
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        holder.bind(posts.get(position) ,itemClickListener);
+        holder.bind(posts.get(position), position ,itemClickListener);
 
     }
 
@@ -55,17 +56,25 @@ public class AdaptadorListaPublicaciones extends RecyclerView.Adapter<AdaptadorL
 
         TextView txt_title;
         TextView txt_body;
+        ImageView indicador;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.txt_title = itemView.findViewById(R.id.txt_titulo_publicacion);
             this.txt_body = itemView.findViewById(R.id.txt_cuerpo_publicacion);
+            this.indicador = itemView.findViewById(R.id.indicador_plantillaRcvListaPublicaciones);
         }
 
-        public void bind (final Post post, final OnItemClickListener listener){
+        public void bind (final Post post, final int position ,  final OnItemClickListener listener){
 
             this.txt_title.setText(post.getTitle());
             this.txt_body.setText(post.getBody());
+
+            if( position < 20 && !post.getViewed()) {
+                this.indicador.setVisibility(View.VISIBLE);
+            }else{
+                this.indicador.setVisibility(View.INVISIBLE);
+            }
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

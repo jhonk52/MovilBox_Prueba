@@ -21,7 +21,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Principal extends AppCompatActivity {
+public class Principal extends AppCompatActivity implements AdaptadorListaPublicaciones.OnItemClickListener{
+
+    List<Post> postes;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,17 +37,32 @@ public class Principal extends AppCompatActivity {
         ServiceHTTP service = API.getAPI().create(ServiceHTTP.class);
         Call<List<Post>> postCall = service.getPostsList();
 
-        postCall.enqueue(new Callback<List<Post>>() {
-            @Override
-            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
-                desplegarLista(response.body());
-            }
-            @Override
-            public void onFailure(Call<List<Post>> call, Throwable t) {
-                Toast.makeText(Principal.this, "Error al obtener datos del servidor", Toast.LENGTH_SHORT).show();
-            }
-        });
+        if(postes != null) {
 
+            desplegarLista(postes);
+
+        }else{
+
+
+            postCall.enqueue(new Callback<List<Post>>() {
+                @Override
+                public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
+
+                    postes = response.body();
+
+                    desplegarLista(postes);
+                    Toast.makeText(Principal.this, "resivido", Toast.LENGTH_SHORT).show();
+
+                }
+
+                @Override
+                public void onFailure(Call<List<Post>> call, Throwable t) {
+                    Toast.makeText(Principal.this, "Error al obtener datos del servidor", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+
+        }
 
     }
 
@@ -56,19 +74,9 @@ public class Principal extends AppCompatActivity {
 
         RecyclerView.LayoutManager manager = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
 
-        AdaptadorListaPublicaciones adapter = new AdaptadorListaPublicaciones(posts, R.layout.plantilla_rcv_listapublicaciones, new AdaptadorListaPublicaciones.OnItemClickListener() {
-            @Override
-            public void onItemClick(Post post, int position) {
-
-                Intent intent = new Intent(Principal.this,Detalle.class);
-                intent.putExtra("post",post.convertToString());
-                startActivity(intent);
-
-            }
-        });
+        AdaptadorListaPublicaciones adapter = new AdaptadorListaPublicaciones(posts, R.layout.plantilla_rcv_listapublicaciones, this);
 
         listaPublicaciones.setLayoutManager(manager);
-
         listaPublicaciones.setAdapter(adapter);
 
         listaPublicaciones.setHasFixedSize(true);
@@ -76,6 +84,19 @@ public class Principal extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onItemClick(Post post, int position) {
+        post.setViewed(true);
+
+        Intent intent = new Intent(Principal.this,Detalle.class);
+        intent.putExtra("post",post.convertToString());
+
+        Toast.makeText(Principal.this, postes.get(position).getViewed().toString(),Toast.LENGTH_SHORT).show();
+
+        startActivity(intent);
+
+        desplegarLista(postes);
+    }
 
 
 }
@@ -89,7 +110,7 @@ user 	-> album
 
 album	-> photos
 
-post	->comments
+post	-> comments
 
 
 */

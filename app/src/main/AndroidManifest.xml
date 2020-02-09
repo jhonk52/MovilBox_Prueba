@@ -12,12 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".activitys.Detalle"
-                  android:parentActivityName=".activitys.Principal">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.movilbox.movilboxprueba.activitys.Principal" />
-        </activity>
+        <activity android:name=".activitys.Detalle"/>
 
         <activity android:name=".activitys.Principal">
             <intent-filter>
