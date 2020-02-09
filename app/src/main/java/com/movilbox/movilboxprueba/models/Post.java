@@ -1,7 +1,5 @@
 package com.movilbox.movilboxprueba.models;
 
-import com.google.gson.annotations.Expose;
-
 public class Post {
 
     private String id;
@@ -9,33 +7,35 @@ public class Post {
     private String body;
     private String userId;
 
-    private Boolean favorite = false;
-    private Boolean isViewed = false;
+    private String favorite = "false";
+    private String viewed = "false";
 
-    public Post(String userId, String id, String title, String body ) {
+    public Post(String id, String title, String body, String userId, String favorite, String viewed) {
         this.id = id;
         this.title = title;
         this.body = body;
         this.userId = userId;
+        this.favorite = favorite;
+        this.viewed = viewed;
     }
 
     public Post() {
     }
 
-    public Boolean getFavorite() {
+    public String getFavorite() {
         return favorite;
     }
 
-    public void setFavorite(Boolean favorite) {
+    public void setFavorite(String favorite) {
         this.favorite = favorite;
     }
 
-    public Boolean getViewed() {
-        return isViewed;
+    public String getViewed() {
+        return viewed;
     }
 
-    public void setViewed(Boolean viewed) {
-        isViewed = viewed;
+    public void setViewed(String viewed) {
+        this.viewed = viewed;
     }
 
     public String getId() {
@@ -71,11 +71,30 @@ public class Post {
     }
 
     public String[] convertToString(){
-        return new String[]{this.userId,this.id,this.title,this.body};
+        return new String[]{this.userId,this.id,this.title,this.body,this.favorite,this.viewed};
     }
 
     public Post convertToPost(String[] post){
-        return new Post(post[0],post[1],post[2],post[3]);
+        return new Post(post[0],post[1],post[2],post[3],post[4],post[5]);
     }
 
+    /*
+    public String[] convertToString(){
+        return new String[]{this.userId,this.id,this.title,this.body,booleanToString(this.favorite),booleanToString(this.viewed)};
+    }
+
+    public Post convertToPost(String[] post){
+        return new Post(post[0],post[1],post[2],post[3],stringToBoolean(post[4]),stringToBoolean(post[5]));
+    }
+
+    private String booleanToString(boolean val){
+        return val ? "true" : "false";
+    }
+
+    private boolean stringToBoolean(String val){
+        return val.equalsIgnoreCase("true");
+    }
+
+
+     */
 }

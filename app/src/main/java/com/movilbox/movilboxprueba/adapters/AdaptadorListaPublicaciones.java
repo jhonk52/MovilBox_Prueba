@@ -70,7 +70,7 @@ public class AdaptadorListaPublicaciones extends RecyclerView.Adapter<AdaptadorL
             this.txt_title.setText(post.getTitle());
             this.txt_body.setText(post.getBody());
 
-            if( position < 20 && !post.getViewed()) {
+            if( position < 20 && !post.getViewed().equalsIgnoreCase("true")) {
                 this.indicador.setVisibility(View.VISIBLE);
             }else{
                 this.indicador.setVisibility(View.INVISIBLE);

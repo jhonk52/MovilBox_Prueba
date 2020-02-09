@@ -7,12 +7,14 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.widget.Toast;
 
 import com.movilbox.movilboxprueba.ServiceHTTP;
 import com.movilbox.movilboxprueba.API;
 import com.movilbox.movilboxprueba.R;
 import com.movilbox.movilboxprueba.adapters.AdaptadorListaPublicaciones;
+import com.movilbox.movilboxprueba.database.BasedeDatos;
 import com.movilbox.movilboxprueba.models.Post;
 
 import java.util.List;
@@ -50,6 +52,12 @@ public class Principal extends AppCompatActivity implements AdaptadorListaPublic
 
                     postes = response.body();
 
+                    BasedeDatos database = new BasedeDatos(Principal.this);
+
+                    for (int i = 0; i < 20 ; i++){
+                        database.savePost(postes.get(i));
+                    }
+
                     desplegarLista(postes);
                     Toast.makeText(Principal.this, "resivido", Toast.LENGTH_SHORT).show();
 
@@ -86,12 +94,10 @@ public class Principal extends AppCompatActivity implements AdaptadorListaPublic
 
     @Override
     public void onItemClick(Post post, int position) {
-        post.setViewed(true);
+        post.setViewed("true");
 
         Intent intent = new Intent(Principal.this,Detalle.class);
         intent.putExtra("post",post.convertToString());
-
-        Toast.makeText(Principal.this, postes.get(position).getViewed().toString(),Toast.LENGTH_SHORT).show();
 
         startActivity(intent);
 
