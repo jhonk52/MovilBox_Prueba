@@ -16,7 +16,7 @@ public class RetrofitInstance {
         if (custom_deserializer) {
 
                 GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.registerTypeAdapter(User.class, new Deserializer());
+                gsonBuilder.registerTypeAdapter(User.class, new gsonDeserializer());
 
                 retrofit = new Retrofit.Builder()
                         .baseUrl(URL)

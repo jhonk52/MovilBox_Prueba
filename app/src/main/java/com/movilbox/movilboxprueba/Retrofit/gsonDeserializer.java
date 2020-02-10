@@ -8,7 +8,7 @@ import com.movilbox.movilboxprueba.models.User;
 
 import java.lang.reflect.Type;
 
-public class Deserializer implements JsonDeserializer<User> {
+public class gsonDeserializer implements JsonDeserializer<User> {
     @Override
     public User deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
 

@@ -5,9 +5,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,7 +18,7 @@ import android.widget.Toast;
 import com.movilbox.movilboxprueba.Retrofit.RetrofitInstance;
 import com.movilbox.movilboxprueba.R;
 import com.movilbox.movilboxprueba.Retrofit.Requests;
-import com.movilbox.movilboxprueba.adapters.CommentsListAdapter;
+import com.movilbox.movilboxprueba.database.Database;
 import com.movilbox.movilboxprueba.models.Comment;
 import com.movilbox.movilboxprueba.models.Post;
 import com.movilbox.movilboxprueba.models.User;
@@ -29,8 +32,8 @@ import retrofit2.Response;
 public class Detalle extends AppCompatActivity {
 
     TextView txt_userName,txt_title,txt_body;
-    ListView lst_commentsList;
     Post post;
+    ImageButton btn_favorite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,19 +48,33 @@ public class Detalle extends AppCompatActivity {
         txt_userName = findViewById(R.id.txt_userName_detalle);
         txt_title = findViewById(R.id.txt_title_detalle);
         txt_body = findViewById(R.id.txt_body_detalle);
-        lst_commentsList = findViewById(R.id.lst_commentsList_detalle);
+        btn_favorite = findViewById(R.id.btn_favorite_detalle);
 
+        // Obtengo la nota seleccionada en la pantalla principal
         if (getIntent().getExtras() != null){
             post = post.convertToPost( getIntent().getExtras().getStringArray("post"));
             txt_title.setText(post.getTitle());
             txt_body.setText(post.getBody());
+
+            btn_favorite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    post.setFavorite(true);
+                    Database database = new Database(Detalle.this);
+                    if(!database.updatePost(post)){
+                        database.savePost(post);
+                    }
+                    Toast.makeText(Detalle.this, "Añadida a favoritos", Toast.LENGTH_SHORT).show();
+                    btn_favorite.setVisibility(View.GONE);
+                }
+            });
+
         }
 
         getDataUser();
-        desplegarComments();
-
 
     }
+
 
 
     private void getDataUser(){
@@ -71,8 +88,8 @@ public class Detalle extends AppCompatActivity {
 
                 final User user = response.body();
 
-            txt_userName.setText(user.getUsername());
-            txt_userName.setOnClickListener(new View.OnClickListener() {
+                txt_userName.setText(user.getUsername());
+                txt_userName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
@@ -97,34 +114,11 @@ public class Detalle extends AppCompatActivity {
             }
             @Override
             public void onFailure(Call<User> call, Throwable t) {
-                Toast.makeText(Detalle.this, "Error con datos del servidor", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
-
-    private void desplegarComments(){
-
-        Requests service = RetrofitInstance.getInstance(false).create(Requests.class);
-        Call<List<Comment>> postCall = service.getPostComments(post.getId());
-
-        postCall.enqueue(new Callback<List<Comment>>() {
-            @Override
-            public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
-
-                CommentsListAdapter adapter = new CommentsListAdapter(Detalle.this,response.body(),R.layout.template_lst_commentslist);
-                lst_commentsList.setAdapter(adapter);
-
-            }
-            @Override
-            public void onFailure(Call<List<Comment>> call, Throwable t) {
                 Toast.makeText(Detalle.this, "Error al obtener datos del servidor", Toast.LENGTH_SHORT).show();
             }
         });
 
     }
-
 
 
 
@@ -137,5 +131,8 @@ public class Detalle extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+
 
 }

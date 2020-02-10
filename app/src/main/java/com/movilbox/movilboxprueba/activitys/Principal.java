@@ -1,18 +1,23 @@
 package com.movilbox.movilboxprueba.activitys;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.movilbox.movilboxprueba.Retrofit.Requests;
 import com.movilbox.movilboxprueba.Retrofit.RetrofitInstance;
 import com.movilbox.movilboxprueba.R;
 import com.movilbox.movilboxprueba.adapters.PostsListAdapter;
+import com.movilbox.movilboxprueba.adapters.SwipeToDeleteCallback;
 import com.movilbox.movilboxprueba.database.Database;
 import com.movilbox.movilboxprueba.models.Post;
 
@@ -31,6 +36,8 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
     RecyclerView.LayoutManager manager_rcvPostList;
     PostsListAdapter adapter_rcvPostList;
 
+    boolean update_button_flag;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,12 +47,36 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
         getSupportActionBar().setTitle("POST APP");
 
         rcv_postsList = findViewById(R.id.rcv_postsList_principal);
-        manager_rcvPostList = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
+        manager_rcvPostList = new LinearLayoutManager(Principal.this);
 
-        obtenerPosts();
+        update_button_flag = false;
+
     }
 
-// idea. guarda en database los post vistos y favoritos
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.optionsmenu_principal,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch (item.getItemId()){
+            case R.id.itemMenu_update_principal:
+
+                update_button_flag = true;
+                getPosts();
+
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
 
     private void desplegarLista(List<Post> posts){
 
@@ -53,13 +84,15 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
 
         rcv_postsList.setLayoutManager(manager_rcvPostList);
         rcv_postsList.setAdapter(adapter_rcvPostList);
-
-        rcv_postsList.setHasFixedSize(true);
+        ItemTouchHelper itemTouchHelper = new
+                ItemTouchHelper(new SwipeToDeleteCallback(adapter_rcvPostList));
+        itemTouchHelper.attachToRecyclerView(rcv_postsList);
 
     }
 
 
-    private void obtenerPosts(){
+
+    private void getPosts(){
 
         Requests service = RetrofitInstance.getInstance(false).create(Requests.class);
         Call<List<Post>> postCall = service.getPostsList();
@@ -69,12 +102,12 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
             @Override
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
 
-                // guarda los 20 primeros post en database, si ya existia carga el que estaba en database y no el que llego en response
+                // obtengo los posts y los guardo en database, si ya existe lo traigo de database
 
                 Database database = new Database(Principal.this);
                 List<Post> postsResponse = response.body();
 
-                for (int i = 0; i < 20 ; i++){
+                for (int i = 0; i < postsResponse.size() ; i++){
 
                     Post post = postsResponse.get(i);
 
@@ -85,13 +118,14 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
 
                 desplegarLista(response.body());
 
-                Toast.makeText(Principal.this, "resivido", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(Call<List<Post>> call, Throwable t) {
 
-                desplegarLista(new Database(Principal.this).listPost(""));
+                if(!update_button_flag){
+                    desplegarLista(new Database(Principal.this).listPost(""));
+                }
 
                 Toast.makeText(Principal.this, "Error al obtener datos del servidor", Toast.LENGTH_SHORT).show();
 
@@ -100,7 +134,7 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
 
 
     }
-// dos candidatos al problema: la instancia de database y el constructor de Post
+
 
     @Override
     public void onItemClick(Post post, int position) {
@@ -121,23 +155,16 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
     }
 
 
+
     @Override
     protected void onResume() {
 
+        getPosts();
+
         super.onResume();
     }
+
+
+
 }
 
-
-/*
-
-user 	-> album
-    	-> post
-	    -> todos
-
-album	-> photos
-
-post	-> comments
-
-
-*/

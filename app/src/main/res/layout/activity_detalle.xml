@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,12 +10,20 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"/>
 
+    <ImageButton
+        android:id="@+id/btn_favorite_detalle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbarpack"
+        app:srcCompat="@android:drawable/btn_star_big_off"
+        />
+
 
     <TextView
         android:id="@+id/txt_userName_detalle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/toolbarpack"
+        android:layout_below="@+id/btn_favorite_detalle"
         android:textAllCaps="false"
         android:textSize="20sp"
         android:textStyle="bold" />
@@ -33,12 +42,7 @@
         android:textSize="20sp"
         android:layout_below="@+id/txt_title_detalle"/>
 
-    <ListView
-        android:id="@+id/lst_commentsList_detalle"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:isScrollContainer="false"
-        android:layout_below="@+id/txt_body_detalle"/>
+
 
 
 </RelativeLayout>

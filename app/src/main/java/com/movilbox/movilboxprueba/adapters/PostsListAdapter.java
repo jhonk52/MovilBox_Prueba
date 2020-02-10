@@ -16,6 +16,9 @@ import java.util.List;
 
 public class PostsListAdapter extends RecyclerView.Adapter<PostsListAdapter.ViewHolder>{
 
+    private Post deletedPost;
+    private int positionDeletedPost;
+
     private List<Post> posts;
     private int layout;
     private OnItemClickListener itemClickListener;
@@ -49,17 +52,28 @@ public class PostsListAdapter extends RecyclerView.Adapter<PostsListAdapter.View
     }
 
 
+    public void deleteItem(int position){
+
+        deletedPost = posts.get(position);
+        positionDeletedPost = position;
+        posts.remove(position);
+        notifyItemRemoved(position);
+
+    }
+
+
     public static class ViewHolder extends RecyclerView.ViewHolder{
 
         TextView txt_title;
         TextView txt_body;
-        ImageView img_indicador;
+        ImageView img_indicador,img_favorite;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.txt_title = itemView.findViewById(R.id.txt_title_templateRcvPostList);
             this.txt_body = itemView.findViewById(R.id.txt_body_templateRcvPostList);
             this.img_indicador = itemView.findViewById(R.id.img_indicador_templateRcvPostList);
+            this.img_favorite = itemView.findViewById(R.id.img_favorite_templateRcvPostList);
         }
 
         public void bind (final Post post, final int position, final OnItemClickListener listener){
@@ -71,6 +85,12 @@ public class PostsListAdapter extends RecyclerView.Adapter<PostsListAdapter.View
                 this.img_indicador.setVisibility(View.VISIBLE);
             }else{
                 this.img_indicador.setVisibility(View.INVISIBLE);
+            }
+
+            if(post.getFavorite()){
+                this.img_favorite.setVisibility(View.VISIBLE);
+            }else {
+                this.img_favorite.setVisibility(View.GONE);
             }
 
             itemView.setOnClickListener(new View.OnClickListener() {

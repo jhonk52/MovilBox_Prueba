@@ -17,12 +17,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+
+            <ImageView
+                android:id="@+id/img_favorite_templateRcvPostList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srcCompat="@android:drawable/btn_star_big_on"
+                android:visibility="gone"/>
+
             <ImageView
                 android:id="@+id/img_indicador_templateRcvPostList"
                 android:layout_width="match_parent"
                 android:layout_height="3dp"
                 android:background="@android:color/holo_blue_dark"
-                android:contentDescription="Indicador si ha sido leido"
+                android:contentDescription="@string/flag_posthasbeenseen"
                 android:visibility="invisible" />
 
             <TextView
