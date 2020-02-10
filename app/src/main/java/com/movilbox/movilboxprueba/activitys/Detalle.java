@@ -3,22 +3,17 @@ package com.movilbox.movilboxprueba.activitys;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.widget.TextViewCompat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.movilbox.movilboxprueba.API;
+import com.movilbox.movilboxprueba.Retrofit.Instance;
 import com.movilbox.movilboxprueba.R;
-import com.movilbox.movilboxprueba.ServiceHTTP;
+import com.movilbox.movilboxprueba.Retrofit.Requests;
 import com.movilbox.movilboxprueba.adapters.CommentsListAdapter;
 import com.movilbox.movilboxprueba.models.Comment;
 import com.movilbox.movilboxprueba.models.Post;
@@ -55,14 +50,14 @@ public class Detalle extends AppCompatActivity {
             txt_body.setText(post.getBody());
         }
 
-        ServiceHTTP service = API.getAPI().create(ServiceHTTP.class);
+        Requests service = Instance.getAPI().create(Requests.class);
         Call<List<Comment>> postCall = service.getPostComments(post.getId());
 
         postCall.enqueue(new Callback<List<Comment>>() {
             @Override
             public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
 
-                CommentsListAdapter adapter = new CommentsListAdapter(Detalle.this,response.body(),R.layout.plantila_lst_postcomments);
+                CommentsListAdapter adapter = new CommentsListAdapter(Detalle.this,response.body(),R.layout.template_lst_commentslist);
                 lst_commentsList.setAdapter(adapter);
 
             }
@@ -82,8 +77,6 @@ public class Detalle extends AppCompatActivity {
         if(item.getItemId() == android.R.id.home){
 
             finish();
-
-
 
         }
 

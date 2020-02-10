@@ -1,4 +1,4 @@
-package com.movilbox.movilboxprueba;
+package com.movilbox.movilboxprueba.Retrofit;
 
 import com.movilbox.movilboxprueba.models.Comment;
 import com.movilbox.movilboxprueba.models.Post;
@@ -9,7 +9,8 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public interface ServiceHTTP {
+public interface Requests {
+
     @GET("posts")
     Call<List<Post>> getPostsList();
 

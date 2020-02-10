@@ -1,9 +1,9 @@
-package com.movilbox.movilboxprueba;
+package com.movilbox.movilboxprueba.Retrofit;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class API {
+public class Instance {
 
     public static final String URL = "https://jsonplaceholder.typicode.com/";
     private static Retrofit retrofit = null;

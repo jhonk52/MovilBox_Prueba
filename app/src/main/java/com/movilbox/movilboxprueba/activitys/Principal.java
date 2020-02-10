@@ -7,14 +7,13 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.widget.Toast;
 
-import com.movilbox.movilboxprueba.ServiceHTTP;
-import com.movilbox.movilboxprueba.API;
+import com.movilbox.movilboxprueba.Retrofit.Requests;
+import com.movilbox.movilboxprueba.Retrofit.Instance;
 import com.movilbox.movilboxprueba.R;
-import com.movilbox.movilboxprueba.adapters.AdaptadorListaPublicaciones;
-import com.movilbox.movilboxprueba.database.BasedeDatos;
+import com.movilbox.movilboxprueba.adapters.PostsListAdapter;
+import com.movilbox.movilboxprueba.database.Database;
 import com.movilbox.movilboxprueba.models.Post;
 
 import java.util.List;
@@ -23,10 +22,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Principal extends AppCompatActivity implements AdaptadorListaPublicaciones.OnItemClickListener{
+//Este activity nunca se destruye por inactividad (ver manifest linea 20)
 
-    List<Post> postes;
+public class Principal extends AppCompatActivity implements PostsListAdapter.OnItemClickListener{
 
+
+    RecyclerView rcv_postsList;
+    RecyclerView.LayoutManager manager_rcvPostList;
+    PostsListAdapter adapter_rcvPostList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,75 +39,81 @@ public class Principal extends AppCompatActivity implements AdaptadorListaPublic
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportActionBar().setTitle("POST APP");
 
-        ServiceHTTP service = API.getAPI().create(ServiceHTTP.class);
-        Call<List<Post>> postCall = service.getPostsList();
+        rcv_postsList = findViewById(R.id.rcv_postsList_principal);
+        manager_rcvPostList = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
 
-        if(postes != null) {
-
-            desplegarLista(postes);
-
-        }else{
-
-
-            postCall.enqueue(new Callback<List<Post>>() {
-                @Override
-                public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
-
-                    postes = response.body();
-
-                    BasedeDatos database = new BasedeDatos(Principal.this);
-
-                    for (int i = 0; i < 20 ; i++){
-                        database.savePost(postes.get(i));
-                    }
-
-                    desplegarLista(postes);
-                    Toast.makeText(Principal.this, "resivido", Toast.LENGTH_SHORT).show();
-
-                }
-
-                @Override
-                public void onFailure(Call<List<Post>> call, Throwable t) {
-                    Toast.makeText(Principal.this, "Error al obtener datos del servidor", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-
-        }
-
+        obtenerPosts();
     }
 
-
+// idea. guarda en database los post vistos y favoritos
 
     private void desplegarLista(List<Post> posts){
 
-        RecyclerView listaPublicaciones = findViewById(R.id.rcv_listaPublicaciones);
+        adapter_rcvPostList = new PostsListAdapter(posts, R.layout.template_rcv_postslist, this);
 
-        RecyclerView.LayoutManager manager = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.VERTICAL);
+        rcv_postsList.setLayoutManager(manager_rcvPostList);
+        rcv_postsList.setAdapter(adapter_rcvPostList);
 
-        AdaptadorListaPublicaciones adapter = new AdaptadorListaPublicaciones(posts, R.layout.plantilla_rcv_listapublicaciones, this);
-
-        listaPublicaciones.setLayoutManager(manager);
-        listaPublicaciones.setAdapter(adapter);
-
-        listaPublicaciones.setHasFixedSize(true);
+        rcv_postsList.setHasFixedSize(true);
 
     }
 
 
+    private void obtenerPosts(){
+
+        Requests service = Instance.getAPI().create(Requests.class);
+        Call<List<Post>> postCall = service.getPostsList();
+
+
+        postCall.enqueue(new Callback<List<Post>>() {
+            @Override
+            public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
+
+                desplegarLista(response.body());
+
+                // guarda los 20 primeros post, si son iguales a los que ya existian no guarda nada
+                Database database = new Database(Principal.this);
+                for (int i = 0; i < 20 ; i++){
+                    database.savePost(response.body().get(i));
+                }
+
+                Toast.makeText(Principal.this, "resivido", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Call<List<Post>> call, Throwable t) {
+
+                desplegarLista(new Database(Principal.this).listPost(""));
+
+                Toast.makeText(Principal.this, "Error al obtener datos del servidor", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+
+    }
+// dos candidatos al problema: la instancia de database y el constructor de Post
+
     @Override
     public void onItemClick(Post post, int position) {
-        post.setViewed("true");
+
+        post.setViewed(true);
+        boolean updatePost = new Database(Principal.this).updatePost(post);
 
         Intent intent = new Intent(Principal.this,Detalle.class);
         intent.putExtra("post",post.convertToString());
 
         startActivity(intent);
 
-        desplegarLista(postes);
+        adapter_rcvPostList.notifyItemChanged(position);
     }
 
 
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+    }
 }
 
 

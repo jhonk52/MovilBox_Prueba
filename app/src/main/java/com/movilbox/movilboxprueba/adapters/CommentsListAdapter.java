@@ -51,9 +51,9 @@ public class CommentsListAdapter extends BaseAdapter {
 
             holder = new viewHolder();
 
-            holder.txt_name = convertView.findViewById(R.id.txt_name_plantillaLstPostComments);
-            holder.txt_email = convertView.findViewById(R.id.txt_email_plantillaLstPostComments);
-            holder.txt_body = convertView.findViewById(R.id.txt_body_plantillaLstPostComments);
+            holder.txt_name = convertView.findViewById(R.id.txt_name_templateLstCommentsList);
+            holder.txt_email = convertView.findViewById(R.id.txt_email_templateLstCommentsList);
+            holder.txt_body = convertView.findViewById(R.id.txt_body_templateLstCommentsList);
 
             convertView.setTag(holder);
 

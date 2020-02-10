@@ -1,6 +1,6 @@
 package com.movilbox.movilboxprueba.database;
 
-public class CamposBasedeDatos {
+public class DatabaseFields {
 
     public static final String TABLE="tb_post";
     public static final String USER_ID = "user_id";
@@ -11,7 +11,7 @@ public class CamposBasedeDatos {
     public static final String VIEWED = "viewed";
 
 
-    public CamposBasedeDatos() {
+    public DatabaseFields() {
     }
 
 }
