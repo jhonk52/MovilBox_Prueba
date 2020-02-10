@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import com.movilbox.movilboxprueba.Retrofit.Requests;
-import com.movilbox.movilboxprueba.Retrofit.Instance;
+import com.movilbox.movilboxprueba.Retrofit.RetrofitInstance;
 import com.movilbox.movilboxprueba.R;
 import com.movilbox.movilboxprueba.adapters.PostsListAdapter;
 import com.movilbox.movilboxprueba.database.Database;
@@ -61,7 +61,7 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
 
     private void obtenerPosts(){
 
-        Requests service = Instance.getAPI().create(Requests.class);
+        Requests service = RetrofitInstance.getInstance(false).create(Requests.class);
         Call<List<Post>> postCall = service.getPostsList();
 
 
@@ -69,13 +69,21 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
             @Override
             public void onResponse(Call<List<Post>> call, Response<List<Post>> response) {
 
-                desplegarLista(response.body());
+                // guarda los 20 primeros post en database, si ya existia carga el que estaba en database y no el que llego en response
 
-                // guarda los 20 primeros post, si son iguales a los que ya existian no guarda nada
                 Database database = new Database(Principal.this);
+                List<Post> postsResponse = response.body();
+
                 for (int i = 0; i < 20 ; i++){
-                    database.savePost(response.body().get(i));
+
+                    Post post = postsResponse.get(i);
+
+                    if( !database.savePost(post) ){
+                        postsResponse.set(i,database.readPost(post.getId()));
+                    }
                 }
+
+                desplegarLista(response.body());
 
                 Toast.makeText(Principal.this, "resivido", Toast.LENGTH_SHORT).show();
             }
@@ -98,7 +106,11 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
     public void onItemClick(Post post, int position) {
 
         post.setViewed(true);
-        boolean updatePost = new Database(Principal.this).updatePost(post);
+
+        Database database = new Database(Principal.this);
+        if (!database.updatePost(post)){
+            database.savePost(post);
+        }
 
         Intent intent = new Intent(Principal.this,Detalle.class);
         intent.putExtra("post",post.convertToString());

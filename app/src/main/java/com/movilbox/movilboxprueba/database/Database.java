@@ -90,8 +90,8 @@ public class Database extends SQLiteOpenHelper {
                     data.getString(data.getColumnIndex(DatabaseFields.ID)),
                     data.getString(data.getColumnIndex(DatabaseFields.TITLE)),
                     data.getString(data.getColumnIndex(DatabaseFields.BODY)),
-                    data.getString(data.getColumnIndex(DatabaseFields.FAVORITE)),
-                    data.getString(data.getColumnIndex(DatabaseFields.VIEWED)));
+                    data.getString(data.getColumnIndex(DatabaseFields.FAVORITE)).equals("1")?"true":"false",
+                    data.getString(data.getColumnIndex(DatabaseFields.VIEWED)).equals("1")?"true":"false");
 
             data.close();
 
