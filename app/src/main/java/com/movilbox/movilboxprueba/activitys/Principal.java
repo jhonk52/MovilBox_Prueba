@@ -19,6 +19,7 @@ import com.movilbox.movilboxprueba.R;
 import com.movilbox.movilboxprueba.adapters.PostsListAdapter;
 import com.movilbox.movilboxprueba.adapters.SwipeToDeleteCallback;
 import com.movilbox.movilboxprueba.database.Database;
+import com.movilbox.movilboxprueba.database.DatabaseFields;
 import com.movilbox.movilboxprueba.models.Post;
 
 import java.util.List;
@@ -31,12 +32,14 @@ import retrofit2.Response;
 
 public class Principal extends AppCompatActivity implements PostsListAdapter.OnItemClickListener{
 
+    RecyclerView postsList;
+    RecyclerView.LayoutManager manager_PostList;
+    PostsListAdapter adapter_PostList;
 
-    RecyclerView rcv_postsList;
-    RecyclerView.LayoutManager manager_rcvPostList;
-    PostsListAdapter adapter_rcvPostList;
+    boolean isFirstPostsLoad;
+    Post clickedPost;
+    int positionclickedPost;
 
-    boolean update_button_flag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +49,34 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         getSupportActionBar().setTitle("POST APP");
 
-        rcv_postsList = findViewById(R.id.rcv_postsList_principal);
-        manager_rcvPostList = new LinearLayoutManager(Principal.this);
+        postsList = findViewById(R.id.rcv_postsList_principal);
+        manager_PostList = new LinearLayoutManager(Principal.this);
 
-        update_button_flag = false;
+        isFirstPostsLoad = true;
+
+        getPosts();
 
     }
+
+
+
+    @Override
+    protected void onResume() {
+
+        if(clickedPost != null){ // si no es la primera vez que se ejecuta onResume
+
+            //En activity detalle se cambio la propiedad viewed o favorite y se guardo en database
+            // aqui se recupera ese post y se actualiza en el recyclerview para mostrar los cambios
+
+            Database database = new Database(Principal.this);
+            clickedPost = database.readPost( clickedPost.getId() );
+            database.close();
+            adapter_PostList.editItem(positionclickedPost, clickedPost);
+        }
+
+        super.onResume();
+    }
+
 
 
     @Override
@@ -61,16 +86,27 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
     }
 
 
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        switch (item.getItemId()){
-            case R.id.itemMenu_update_principal:
+        int itemId = item.getItemId();
 
-                update_button_flag = true;
-                getPosts();
+        if (itemId == R.id.itemMenu_update_principal ||
+                itemId == R.id.itemMenu_allPost_principal){
 
-                break;
+            isFirstPostsLoad = false;
+            getPosts(); // obtengo los post desde el servicio en internet y los listo en el recyclerview
+
+        }else if (itemId == R.id.itemMenu_favorites_principal){
+
+            //Obtengo los post desde la base de datos que tengan campo "favorite" como true (1 en sqlite)
+            // y actualizo el reciclerview con los nuevos post favoritos
+            Database database = new Database(Principal.this);
+                adapter_PostList.setPosts( database.listPost(DatabaseFields.FAVORITE,"1") );
+                adapter_PostList.notifyDataSetChanged();
+            database.close();
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -78,17 +114,48 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
 
 
 
-    private void desplegarLista(List<Post> posts){
+    @Override
+    public void onItemClick(Post post, int position) {
+        clickedPost = post;
+        positionclickedPost = position;
 
-        adapter_rcvPostList = new PostsListAdapter(posts, R.layout.template_rcv_postslist, this);
+        clickedPost.setViewed(true);
 
-        rcv_postsList.setLayoutManager(manager_rcvPostList);
-        rcv_postsList.setAdapter(adapter_rcvPostList);
-        ItemTouchHelper itemTouchHelper = new
-                ItemTouchHelper(new SwipeToDeleteCallback(adapter_rcvPostList));
-        itemTouchHelper.attachToRecyclerView(rcv_postsList);
+        Intent intent = new Intent(Principal.this,Detalle.class);
+
+        // envio el post clickeado al activity detalle en forma de []String
+        intent.putExtra("post",post.convertToString());
+
+        startActivity(intent);
+
+        adapter_PostList.notifyItemChanged(position);
+    }
+
+
+
+
+    private void listingPosts(List<Post> posts){
+        //Este metodo lista los posts en el recyclerview, si es la primera vez carga las instancias necesarias
+        // sino y como ya existen las instancias solo se le cambia la lista de posts y se actualiza
+        if(isFirstPostsLoad) {
+
+            adapter_PostList = new PostsListAdapter(posts, R.layout.template_rcv_postslist, R.layout.footer_rcv_postslist,this);
+            postsList.setAdapter(adapter_PostList);
+            postsList.setLayoutManager(manager_PostList);
+            // swipe efect
+            ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new SwipeToDeleteCallback(adapter_PostList));
+            itemTouchHelper.attachToRecyclerView(postsList);
+
+        }else{
+
+            adapter_PostList.setPosts(posts);
+            adapter_PostList.notifyDataSetChanged();
+            postsList.scrollToPosition(0);
+
+        }
 
     }
+
 
 
 
@@ -111,20 +178,21 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
 
                     Post post = postsResponse.get(i);
 
-                    if( !database.savePost(post) ){
+                    if( !database.savePost(post) ){// sino logro guardar significa que ya existe
                         postsResponse.set(i,database.readPost(post.getId()));
                     }
                 }
 
-                desplegarLista(response.body());
+                listingPosts(postsResponse);
 
+                database.close();
             }
 
             @Override
             public void onFailure(Call<List<Post>> call, Throwable t) {
 
-                if(!update_button_flag){
-                    desplegarLista(new Database(Principal.this).listPost(""));
+                if(!isFirstPostsLoad){
+                    listingPosts(new Database(Principal.this).listPost("",""));
                 }
 
                 Toast.makeText(Principal.this, "Error al obtener datos del servidor", Toast.LENGTH_SHORT).show();
@@ -135,34 +203,6 @@ public class Principal extends AppCompatActivity implements PostsListAdapter.OnI
 
     }
 
-
-    @Override
-    public void onItemClick(Post post, int position) {
-
-        post.setViewed(true);
-
-        Database database = new Database(Principal.this);
-        if (!database.updatePost(post)){
-            database.savePost(post);
-        }
-
-        Intent intent = new Intent(Principal.this,Detalle.class);
-        intent.putExtra("post",post.convertToString());
-
-        startActivity(intent);
-
-        adapter_rcvPostList.notifyItemChanged(position);
-    }
-
-
-
-    @Override
-    protected void onResume() {
-
-        getPosts();
-
-        super.onResume();
-    }
 
 
 

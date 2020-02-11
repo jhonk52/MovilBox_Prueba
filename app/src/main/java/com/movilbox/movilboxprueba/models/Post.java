@@ -80,23 +80,4 @@ public class Post {
        return new Post(post[0],post[1],post[2],post[3],post[4],post[5]);
     }
 
-    /*
-    public String[] convertToString(){
-        return new String[]{this.userId,this.id,this.title,this.body,booleanToString(this.favorite),booleanToString(this.viewed)};
-    }
-
-    public Post convertToPost(String[] post){
-        return new Post(post[0],post[1],post[2],post[3],stringToBoolean(post[4]),stringToBoolean(post[5]));
-    }
-
-    private String booleanToString(boolean val){
-        return val ? "true" : "false";
-    }
-
-    private boolean stringToBoolean(String val){
-        return val.equalsIgnoreCase("true");
-    }
-
-
-     */
 }

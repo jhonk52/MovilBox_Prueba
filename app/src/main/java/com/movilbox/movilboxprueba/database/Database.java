@@ -47,21 +47,19 @@ public class Database extends SQLiteOpenHelper {
 
 
 
+    @Override
+    public synchronized void close() {
+        super.close();
+    }
+
+
+
 
     public boolean savePost(Post post){
 
-        ContentValues valores = new ContentValues();
-
-        valores.put(DatabaseFields.USER_ID, post.getUserId());
-        valores.put(DatabaseFields.ID, post.getId());
-        valores.put(DatabaseFields.TITLE, post.getTitle());
-        valores.put(DatabaseFields.BODY, post.getBody());
-        valores.put(DatabaseFields.FAVORITE, post.getFavorite());
-        valores.put(DatabaseFields.VIEWED,post.getViewed());
-
         SQLiteDatabase bd = getWritableDatabase();
 
-        long num = bd.insert(DatabaseFields.TABLE, null, valores);
+        long num = bd.insert(DatabaseFields.TABLE, null, contentValuesFromPost(post));
 
         return num > 0;
     }
@@ -84,17 +82,9 @@ public class Database extends SQLiteOpenHelper {
 
         Cursor data = bd.query(DatabaseFields.TABLE, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
 
-
         if (data.moveToFirst()) {
-            Post post = new Post(data.getString(data.getColumnIndex(DatabaseFields.USER_ID)),
-                    data.getString(data.getColumnIndex(DatabaseFields.ID)),
-                    data.getString(data.getColumnIndex(DatabaseFields.TITLE)),
-                    data.getString(data.getColumnIndex(DatabaseFields.BODY)),
-                    data.getString(data.getColumnIndex(DatabaseFields.FAVORITE)).equals("1")?"true":"false",
-                    data.getString(data.getColumnIndex(DatabaseFields.VIEWED)).equals("1")?"true":"false");
-
+            Post post = postFromCursor(data);
             data.close();
-
             return post;
         } else {
             return null;
@@ -104,40 +94,22 @@ public class Database extends SQLiteOpenHelper {
 
 
 
-    public void deletePost (Post post) {
-
-        SQLiteDatabase bd = getWritableDatabase();
-
-        String[] pathfinder = {post.getId()};
-
-        bd.delete(DatabaseFields.TABLE, DatabaseFields.ID+"=?",pathfinder);
-
-    }
-
-
-
-
-    public List<Post> listPost(String find){
+    public List<Post> listPost(String databaseField, String find){
 
         SQLiteDatabase bd = getReadableDatabase();
         Cursor data;
         List<Post> postList = new ArrayList<>();
 
-        if (find.isEmpty()) {
+        if (find.isEmpty()) { // si no se le especifico valor para buscar, lista todos los posts
             data = bd.rawQuery("SELECT * FROM " + DatabaseFields.TABLE, null);
 
         }else {
-            data = bd.rawQuery("SELECT * FROM " + DatabaseFields.TABLE+" where "+ DatabaseFields.ID+ " like '%" + find + "%'", null);
+            data = bd.rawQuery("SELECT * FROM " + DatabaseFields.TABLE+" where "+ databaseField + " like '%" + find + "%'", null);
         }
 
         if (data.moveToFirst()) {
             for (int i = 0; i < data.getCount() ; i++) {
-                postList.add(new Post (data.getString(data.getColumnIndex(DatabaseFields.USER_ID)),
-                                        data.getString(data.getColumnIndex(DatabaseFields.ID)),
-                                        data.getString(data.getColumnIndex(DatabaseFields.TITLE)),
-                                        data.getString(data.getColumnIndex(DatabaseFields.BODY)),
-                                        data.getString(data.getColumnIndex(DatabaseFields.FAVORITE)).equals("1")?"true":"false",
-                                        data.getString(data.getColumnIndex(DatabaseFields.VIEWED)).equals("1")?"true":"false"));
+                postList.add( postFromCursor(data) );
                 data.moveToNext();
             }
         }
@@ -151,24 +123,43 @@ public class Database extends SQLiteOpenHelper {
 
     public boolean updatePost (Post post){
 
-        ContentValues valores = new ContentValues();
-
-        valores.put(DatabaseFields.USER_ID, post.getUserId());
-        valores.put(DatabaseFields.ID, post.getId());
-        valores.put(DatabaseFields.TITLE, post.getTitle());
-        valores.put(DatabaseFields.BODY, post.getBody());
-        valores.put(DatabaseFields.FAVORITE, post.getFavorite());
-        valores.put(DatabaseFields.VIEWED,post.getViewed());
-
         String[] selectionArgs = {post.getId()};
 
         SQLiteDatabase bd = getWritableDatabase();
 
-        int var = bd.update(DatabaseFields.TABLE,valores, DatabaseFields.ID+"=?", selectionArgs);
+        int var = bd.update(DatabaseFields.TABLE, contentValuesFromPost(post), DatabaseFields.ID+"=?", selectionArgs);
 
         return var > 0;
 
     }
+
+
+
+
+    private Post postFromCursor(Cursor data){
+            return new Post (data.getString(data.getColumnIndex(DatabaseFields.USER_ID)),
+                             data.getString(data.getColumnIndex(DatabaseFields.ID)),
+                             data.getString(data.getColumnIndex(DatabaseFields.TITLE)),
+                             data.getString(data.getColumnIndex(DatabaseFields.BODY)),
+                             data.getString(data.getColumnIndex(DatabaseFields.FAVORITE)).equals("1")?"true":"false",
+                             data.getString(data.getColumnIndex(DatabaseFields.VIEWED)).equals("1")?"true":"false");
+        }
+
+
+
+
+    private ContentValues contentValuesFromPost(Post post){
+            ContentValues values = new ContentValues();
+
+            values.put(DatabaseFields.USER_ID, post.getUserId());
+            values.put(DatabaseFields.ID, post.getId());
+            values.put(DatabaseFields.TITLE, post.getTitle());
+            values.put(DatabaseFields.BODY, post.getBody());
+            values.put(DatabaseFields.FAVORITE, post.getFavorite());
+            values.put(DatabaseFields.VIEWED,post.getViewed());
+
+            return values;
+        }
 
 
 

@@ -3,4 +3,7 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="update">Update</string>
     <string name="flag_posthasbeenseen">flag_postHasBeenSeen</string>
+    <string name="delete_all_posts">Delete all Posts</string>
+    <string name="all_posts">All Posts</string>
+    <string name="favorites">Favorites</string>
 </resources>

@@ -14,61 +14,115 @@ import com.movilbox.movilboxprueba.R;
 
 import java.util.List;
 
-public class PostsListAdapter extends RecyclerView.Adapter<PostsListAdapter.ViewHolder>{
-
-    private Post deletedPost;
-    private int positionDeletedPost;
+public class PostsListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     private List<Post> posts;
-    private int layout;
+    private int layoutPost;
+    private int layoutFooter;
     private OnItemClickListener itemClickListener;
 
-    public PostsListAdapter(List<Post> posts, int layout, OnItemClickListener itemClickListener) {
+    private static final int FOOTER_VIEW = 1;
+
+    public PostsListAdapter(List<Post> posts, int layoutPost, int layoutFooter, OnItemClickListener itemClickListener) {
         this.posts = posts;
-        this.layout = layout;
+        this.layoutPost = layoutPost;
+        this.layoutFooter = layoutFooter;
         this.itemClickListener = itemClickListener;
     }
 
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(parent.getContext()).inflate(layout,parent,false);
+        View view;
 
-        return new ViewHolder(view);
+        if (viewType == FOOTER_VIEW){
+            view = LayoutInflater.from(parent.getContext()).inflate(layoutFooter,parent,false);
+            return new FooterViewHolder(view);
+        }
+        else{
+            view = LayoutInflater.from(parent.getContext()).inflate(layoutPost,parent,false);
+            return new PostsViewHolder(view);
+        }
+
     }
+
 
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(posts.get(position), position ,itemClickListener);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+
+        if(holder instanceof FooterViewHolder){
+
+            FooterViewHolder vh = (FooterViewHolder) holder;
+
+        }else if (holder instanceof PostsViewHolder){
+
+            PostsViewHolder vh = (PostsViewHolder) holder;
+            vh.bind(posts.get(position<posts.size()?position:posts.size()-1), position ,itemClickListener);
+        }
+
     }
+
 
 
     @Override
     public int getItemCount() {
-        return posts.size();
+
+        if (posts.size()>0){
+            return posts.size()+1;
+        }else{
+            return 0;
+        }
+
     }
+
+
+
+    @Override
+    public int getItemViewType(int position) {
+
+        if (position == posts.size()){
+            return FOOTER_VIEW;
+        }
+
+        return super.getItemViewType(position);
+    }
+
+
 
 
     public void deleteItem(int position){
-
-        deletedPost = posts.get(position);
-        positionDeletedPost = position;
         posts.remove(position);
         notifyItemRemoved(position);
-
     }
 
 
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+
+
+    public void editItem(int position, Post post){
+        posts.set(position,post);
+        notifyItemChanged(position);
+    }
+
+
+
+
+    public void setPosts(List<Post> posts){
+        this.posts = posts;
+    }
+
+
+
+
+    public static class PostsViewHolder extends RecyclerView.ViewHolder{
 
         TextView txt_title;
         TextView txt_body;
         ImageView img_indicador,img_favorite;
 
-        public ViewHolder(@NonNull View itemView) {
+        public PostsViewHolder(@NonNull View itemView) {
             super(itemView);
             this.txt_title = itemView.findViewById(R.id.txt_title_templateRcvPostList);
             this.txt_body = itemView.findViewById(R.id.txt_body_templateRcvPostList);
@@ -103,9 +157,32 @@ public class PostsListAdapter extends RecyclerView.Adapter<PostsListAdapter.View
     }
 
 
+
+
+    public class FooterViewHolder extends RecyclerView.ViewHolder {
+
+        public FooterViewHolder(View itemView) {
+            super(itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    posts.clear();
+                    notifyDataSetChanged();
+                }
+            });
+        }
+
+    }
+
+
+
+
     public interface OnItemClickListener {
         void onItemClick(Post post,int position);
     }
+
+
+
 
 }
 

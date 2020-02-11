@@ -8,6 +8,8 @@ import com.movilbox.movilboxprueba.models.User;
 
 import java.lang.reflect.Type;
 
+// debido a que algunos datos del user estan en objetos dentro de objetos, utilizo esta clase para accederlos
+// sin tener que crear varios nuevos modelos de datos, segun el funcionamiento retrofit+gson
 public class gsonDeserializer implements JsonDeserializer<User> {
     @Override
     public User deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {

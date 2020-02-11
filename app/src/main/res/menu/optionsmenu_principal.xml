@@ -6,4 +6,12 @@
         android:id="@+id/itemMenu_update_principal"
         android:title="@string/update"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/itemMenu_allPost_principal"
+        android:title="@string/all_posts"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/itemMenu_favorites_principal"
+        android:title="@string/favorites"
+        app:showAsAction="never" />
 </menu>
